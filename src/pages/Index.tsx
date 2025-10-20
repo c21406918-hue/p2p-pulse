@@ -5,8 +5,11 @@ import {
   TrendingDown, 
   DollarSign, 
   RefreshCw,
-  Activity 
+  Activity,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/MetricCard";
 import { Calculator } from "@/components/Calculator";
 import { Button } from "@/components/ui/button";
@@ -22,7 +25,18 @@ const REFRESH_INTERVAL = 30000; // 30 seconds
 
 const Index = () => {
   const { toast } = useToast();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión exitosamente",
+    });
+  };
 
   const { data, isLoading, error, refetch, isRefetching } = useQuery<MarketData>({
     queryKey: ['binanceMarket'],
@@ -90,15 +104,25 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground">Última actualización</p>
                 <p className="text-sm font-mono">{lastUpdate.toLocaleTimeString('es-VE')}</p>
               </div>
-              <Button 
-                onClick={handleManualRefresh} 
-                disabled={isRefetching}
-                size="icon"
-                variant="outline"
-                className="animate-glow"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleManualRefresh} 
+                  disabled={isRefetching}
+                  size="icon"
+                  variant="outline"
+                  className="animate-glow"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+                </Button>
+                <Button 
+                  onClick={handleLogout}
+                  size="icon"
+                  variant="outline"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

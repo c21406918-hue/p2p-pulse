@@ -1,0 +1,4 @@
+project_id = "ybdxcreylvhgovpduaft"
+
+[functions.binance-market]
+verify_jwt = false

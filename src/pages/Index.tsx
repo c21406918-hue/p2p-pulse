@@ -134,7 +134,7 @@ const Index = () => {
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
-              title="Volumen Total de Bid"
+              title="Volumen Total de Offer"
               value={buyVolume.toLocaleString('es-VE', { maximumFractionDigits: 2 })}
               subtitle="USDT disponibles"
               icon={TrendingUp}
@@ -142,7 +142,7 @@ const Index = () => {
             />
             
             <MetricCard
-              title="Volumen Total de Offer"
+              title="Volumen Total de Bid"
               value={sellVolume.toLocaleString('es-VE', { maximumFractionDigits: 2 })}
               subtitle="USDT disponibles"
               icon={TrendingDown}

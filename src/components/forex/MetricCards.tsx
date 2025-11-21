@@ -49,6 +49,7 @@ export function MetricCards({ data }: MetricCardsProps) {
                 USDT que el mercado quiere comprar
               </div>
             </div>
+          </div>
         </Card>
 
         {/* Total USDT de Venta (Oferta) */}
@@ -77,6 +78,7 @@ export function MetricCards({ data }: MetricCardsProps) {
                 USDT disponibles para vender
               </div>
             </div>
+          </div>
         </Card>
 
         {/* Volumen Total de Compra (Bid) */}

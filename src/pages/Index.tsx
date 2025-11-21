@@ -11,6 +11,7 @@ import {
   type MarketData 
 } from "@/lib/binance-api";
 import { TickerBar } from "@/components/forex/TickerBar";
+import { MetricCards } from "@/components/forex/MetricCards";
 import { DepthChart } from "@/components/forex/DepthChart";
 import { MarketStats } from "@/components/forex/MarketStats";
 import { OrderCalculator } from "@/components/forex/OrderCalculator";
@@ -118,51 +119,20 @@ const Index = () => {
             <TickerBar metrics={forexMetrics} lastUpdate={lastUpdate} />
           )}
 
+          {/* Metric Cards - Volúmenes y Precios Promedio */}
+          {data && <MetricCards data={data} />}
+
           {/* Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Depth Chart */}
             {data && <DepthChart data={data} />}
             
-            {/* Market Stats */}
-            {data && <MarketStats data={data} />}
-          </div>
-
-          {/* Bottom Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Order Calculator */}
             {data && <OrderCalculator buyAds={data.buyAds} sellAds={data.sellAds} />}
-            
-            {/* Additional Info Panel */}
-            <div className="glass-card p-6">
-              <h3 className="text-lg font-semibold mb-4">Información del Mercado</h3>
-              <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                  <div className="text-sm font-medium mb-2">Sobre BID y ASK</div>
-                  <p className="text-xs text-muted-foreground">
-                    <strong>BID:</strong> Precio más alto que alguien pagará por USDT (compra).<br/>
-                    <strong>ASK:</strong> Precio más bajo al que alguien venderá USDT.<br/>
-                    <strong>SPREAD:</strong> Diferencia entre ASK y BID, indica la liquidez del mercado.
-                  </p>
-                </div>
-                
-                <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-                  <div className="text-sm font-medium mb-2">Gráfico de Profundidad</div>
-                  <p className="text-xs text-muted-foreground">
-                    Visualiza el volumen acumulado de órdenes a diferentes precios. 
-                    Los "muros" grandes indican niveles de soporte/resistencia importantes.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-success/5 border border-success/20">
-                  <div className="text-sm font-medium mb-2">Impacto de Mercado</div>
-                  <p className="text-xs text-muted-foreground">
-                    Indica cuánto puede cambiar el precio tu orden. Un impacto bajo (&lt;1%) 
-                    significa buena liquidez. Alto (&gt;3%) puede mover significativamente el mercado.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
+
+          {/* Market Stats - Estadísticas de Compra y Venta */}
+          {data && <MarketStats data={data} />}
         </div>
       </main>
 

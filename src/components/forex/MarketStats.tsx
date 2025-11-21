@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { MarketData, getPaymentMethodDistribution } from "@/lib/binance-api";
+import { MarketData } from "@/lib/binance-api";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface MarketStatsProps {
@@ -8,109 +7,83 @@ interface MarketStatsProps {
 }
 
 export function MarketStats({ data }: MarketStatsProps) {
-  const paymentDistribution = getPaymentMethodDistribution(data);
-  
-  const maxPrice24h = Math.max(
-    ...data.buyAds.map(a => a.price),
-    ...data.sellAds.map(a => a.price)
-  );
-  
-  const minPrice24h = Math.min(
-    ...data.buyAds.map(a => a.price),
-    ...data.sellAds.map(a => a.price)
-  );
+  // Estadísticas de Compra (BID)
+  const buyStats = {
+    activeAds: data.buyAds.length,
+    minPrice: data.buyAds.length > 0 ? Math.min(...data.buyAds.map(a => a.price)) : 0,
+    maxPrice: data.buyAds.length > 0 ? Math.max(...data.buyAds.map(a => a.price)) : 0,
+  };
 
-  const COLORS = [
-    'hsl(var(--success))',
-    'hsl(var(--warning))',
-    'hsl(var(--primary))',
-    'hsl(var(--accent))',
-    'hsl(var(--success) / 0.7)',
-    'hsl(var(--warning) / 0.7)',
-    'hsl(var(--primary) / 0.7)',
-    'hsl(var(--accent) / 0.7)',
-  ];
+  // Estadísticas de Venta (OFFER/ASK)
+  const sellStats = {
+    activeAds: data.sellAds.length,
+    minPrice: data.sellAds.length > 0 ? Math.min(...data.sellAds.map(a => a.price)) : 0,
+    maxPrice: data.sellAds.length > 0 ? Math.max(...data.sellAds.map(a => a.price)) : 0,
+  };
 
   return (
-    <Card className="glass-card p-6">
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-1">Estadísticas de Mercado</h3>
-          <p className="text-xs text-muted-foreground">Liquidez y Actividad</p>
-        </div>
-
-        {/* Precios 24h */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Precio Máximo 24h</div>
-            <div className="text-xl font-bold text-success font-mono">{maxPrice24h.toFixed(2)}</div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Estadísticas de Compra */}
+      <Card className="glass-card p-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-success" />
+            <h3 className="text-lg font-semibold">Estadísticas de Compra</h3>
           </div>
-          <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Precio Mínimo 24h</div>
-            <div className="text-xl font-bold text-warning font-mono">{minPrice24h.toFixed(2)}</div>
-          </div>
-        </div>
-
-        {/* Anuncios Activos */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Anuncios Activos (Compra)</span>
-            <span className="font-mono font-semibold text-success">{data.buyAds.length}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Anuncios Activos (Venta)</span>
-            <span className="font-mono font-semibold text-warning">{data.sellAds.length}</span>
-          </div>
-          <div className="flex items-center justify-between pt-2 border-t border-border/40">
-            <span className="text-sm text-muted-foreground">Tendencia de Anuncios</span>
-            <div className="flex items-center gap-1">
-              {data.buyAds.length > data.sellAds.length ? (
-                <>
-                  <TrendingUp className="w-4 h-4 text-success" />
-                  <span className="text-sm font-medium text-success">Más Compradores</span>
-                </>
-              ) : (
-                <>
-                  <TrendingDown className="w-4 h-4 text-warning" />
-                  <span className="text-sm font-medium text-warning">Más Vendedores</span>
-                </>
-              )}
+          
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-success/5 border border-success/20">
+              <span className="text-sm text-muted-foreground">Anuncios Activos:</span>
+              <span className="font-mono font-bold text-xl text-success">{buyStats.activeAds}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+              <span className="text-sm text-muted-foreground">Precio Mínimo:</span>
+              <span className="font-mono font-semibold text-success">
+                {buyStats.minPrice.toFixed(2)} VES
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+              <span className="text-sm text-muted-foreground">Precio Máximo:</span>
+              <span className="font-mono font-semibold text-success">
+                {buyStats.maxPrice.toFixed(2)} VES
+              </span>
             </div>
           </div>
         </div>
+      </Card>
 
-        {/* Liquidez por Método de Pago */}
-        <div className="space-y-3">
-          <div className="text-sm font-medium">Liquidez por Método de Pago</div>
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={paymentDistribution} layout="horizontal">
-                <XAxis type="number" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10 }} />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
-                  stroke="hsl(var(--muted-foreground))" 
-                  tick={{ fontSize: 10 }}
-                  width={80}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                  formatter={(value: number) => `${value.toFixed(2)} USDT`}
-                />
-                <Bar dataKey="volume" radius={[0, 4, 4, 0]}>
-                  {paymentDistribution.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+      {/* Estadísticas de Venta */}
+      <Card className="glass-card p-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <TrendingDown className="w-5 h-5 text-warning" />
+            <h3 className="text-lg font-semibold">Estadísticas de Venta</h3>
+          </div>
+          
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20">
+              <span className="text-sm text-muted-foreground">Anuncios Activos:</span>
+              <span className="font-mono font-bold text-xl text-warning">{sellStats.activeAds}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+              <span className="text-sm text-muted-foreground">Precio Mínimo:</span>
+              <span className="font-mono font-semibold text-warning">
+                {sellStats.minPrice.toFixed(2)} VES
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+              <span className="text-sm text-muted-foreground">Precio Máximo:</span>
+              <span className="font-mono font-semibold text-warning">
+                {sellStats.maxPrice.toFixed(2)} VES
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

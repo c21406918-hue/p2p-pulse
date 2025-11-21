@@ -25,6 +25,92 @@ export interface ForexMetrics {
   midPrice: number;
 }
 
+// Storage para valores del inicio del día
+const STORAGE_KEY = 'binance_day_start_values';
+
+interface DayStartValues {
+  date: string;
+  offerVolume: number;
+  bidVolume: number;
+  avgBuyPrice: number;
+  avgSellPrice: number;
+}
+
+export function saveDayStartValues(data: MarketData) {
+  const today = new Date().toDateString();
+  const stored = localStorage.getItem(STORAGE_KEY);
+  
+  // Si no hay datos guardados o es un nuevo día, guardar valores actuales
+  if (!stored) {
+    const values: DayStartValues = {
+      date: today,
+      offerVolume: calculateTotalVolume(data.sellAds),
+      bidVolume: calculateTotalVolume(data.buyAds),
+      avgBuyPrice: calculateWeightedAveragePrice(data.buyAds),
+      avgSellPrice: calculateWeightedAveragePrice(data.sellAds),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+    return values;
+  }
+  
+  const parsed: DayStartValues = JSON.parse(stored);
+  
+  // Si es un nuevo día, actualizar con valores actuales
+  if (parsed.date !== today) {
+    const values: DayStartValues = {
+      date: today,
+      offerVolume: calculateTotalVolume(data.sellAds),
+      bidVolume: calculateTotalVolume(data.buyAds),
+      avgBuyPrice: calculateWeightedAveragePrice(data.buyAds),
+      avgSellPrice: calculateWeightedAveragePrice(data.sellAds),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+    return values;
+  }
+  
+  return parsed;
+}
+
+export function getDayStartValues(): DayStartValues | null {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
+  
+  const parsed: DayStartValues = JSON.parse(stored);
+  const today = new Date().toDateString();
+  
+  // Si los datos son de un día anterior, no son válidos
+  if (parsed.date !== today) return null;
+  
+  return parsed;
+}
+
+export function calculateDayChanges(data: MarketData) {
+  const dayStart = getDayStartValues();
+  
+  if (!dayStart) {
+    // Si no hay datos del inicio del día, guardarlos ahora
+    saveDayStartValues(data);
+    return {
+      offerVolumeChange: 0,
+      bidVolumeChange: 0,
+      buyPriceChange: 0,
+      sellPriceChange: 0,
+    };
+  }
+  
+  const currentOfferVolume = calculateTotalVolume(data.sellAds);
+  const currentBidVolume = calculateTotalVolume(data.buyAds);
+  const currentBuyPrice = calculateWeightedAveragePrice(data.buyAds);
+  const currentSellPrice = calculateWeightedAveragePrice(data.sellAds);
+  
+  return {
+    offerVolumeChange: ((currentOfferVolume - dayStart.offerVolume) / dayStart.offerVolume) * 100,
+    bidVolumeChange: ((currentBidVolume - dayStart.bidVolume) / dayStart.bidVolume) * 100,
+    buyPriceChange: ((currentBuyPrice - dayStart.avgBuyPrice) / dayStart.avgBuyPrice) * 100,
+    sellPriceChange: ((currentSellPrice - dayStart.avgSellPrice) / dayStart.avgSellPrice) * 100,
+  };
+}
+
 export async function fetchMarketData(): Promise<MarketData> {
   try {
     const response = await fetch(EDGE_FUNCTION_URL, {

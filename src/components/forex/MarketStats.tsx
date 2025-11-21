@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { MarketData } from "@/lib/binance-api";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Target } from "lucide-react";
 
 interface MarketStatsProps {
   data: MarketData;
@@ -22,68 +22,134 @@ export function MarketStats({ data }: MarketStatsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Estadísticas de Compra */}
-      <Card className="glass-card p-6">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-success" />
-            <h3 className="text-lg font-semibold">Estadísticas de Compra</h3>
-          </div>
-          
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-success/5 border border-success/20">
-              <span className="text-sm text-muted-foreground">Anuncios Activos:</span>
-              <span className="font-mono font-bold text-xl text-success">{buyStats.activeAds}</span>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-white mb-6">📈 Estadísticas Detalladas del Mercado</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Estadísticas de Compra */}
+        <Card className="bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent border-green-500/30 p-8 hover:border-green-500/50 transition-all duration-300">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-green-500/20 rounded-xl">
+                <TrendingUp className="w-8 h-8 text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-green-400">Estadísticas de Compra</h3>
+                <p className="text-sm text-slate-400">Anuncios BID activos en el mercado</p>
+              </div>
             </div>
             
-            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-              <span className="text-sm text-muted-foreground">Precio Mínimo:</span>
-              <span className="font-mono font-semibold text-success">
-                {buyStats.minPrice.toFixed(2)} VES
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-              <span className="text-sm text-muted-foreground">Precio Máximo:</span>
-              <span className="font-mono font-semibold text-success">
-                {buyStats.maxPrice.toFixed(2)} VES
-              </span>
-            </div>
-          </div>
-        </div>
-      </Card>
+            <div className="space-y-4 pt-4">
+              {/* Anuncios Activos */}
+              <div className="flex items-center justify-between p-5 rounded-xl bg-green-500/10 border border-green-500/20 hover:bg-green-500/15 transition-colors">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6 text-green-400" />
+                  <span className="text-slate-300 font-medium">Anuncios Activos</span>
+                </div>
+                <span className="font-mono font-bold text-3xl text-green-400">{buyStats.activeAds}</span>
+              </div>
+              
+              {/* Precio Mínimo */}
+              <div className="flex items-center justify-between p-5 rounded-xl bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Target className="w-5 h-5 text-green-400" />
+                  <span className="text-slate-400">Precio Mínimo</span>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono font-semibold text-xl text-green-400">
+                    {buyStats.minPrice.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-slate-500">VES</div>
+                </div>
+              </div>
+              
+              {/* Precio Máximo */}
+              <div className="flex items-center justify-between p-5 rounded-xl bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Target className="w-5 h-5 text-green-400" />
+                  <span className="text-slate-400">Precio Máximo</span>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono font-semibold text-xl text-green-400">
+                    {buyStats.maxPrice.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-slate-500">VES</div>
+                </div>
+              </div>
 
-      {/* Estadísticas de Venta */}
-      <Card className="glass-card p-6">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-warning" />
-            <h3 className="text-lg font-semibold">Estadísticas de Venta</h3>
-          </div>
-          
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20">
-              <span className="text-sm text-muted-foreground">Anuncios Activos:</span>
-              <span className="font-mono font-bold text-xl text-warning">{sellStats.activeAds}</span>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-              <span className="text-sm text-muted-foreground">Precio Mínimo:</span>
-              <span className="font-mono font-semibold text-warning">
-                {sellStats.minPrice.toFixed(2)} VES
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-              <span className="text-sm text-muted-foreground">Precio Máximo:</span>
-              <span className="font-mono font-semibold text-warning">
-                {sellStats.maxPrice.toFixed(2)} VES
-              </span>
+              {/* Rango de Precio */}
+              <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
+                <div className="text-xs text-slate-400 mb-2">Rango de Precio</div>
+                <div className="font-mono text-sm text-green-400">
+                  {buyStats.minPrice.toFixed(2)} - {buyStats.maxPrice.toFixed(2)} VES
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        {/* Estadísticas de Venta */}
+        <Card className="bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent border-orange-500/30 p-8 hover:border-orange-500/50 transition-all duration-300">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-orange-500/20 rounded-xl">
+                <TrendingDown className="w-8 h-8 text-orange-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-orange-400">Estadísticas de Venta</h3>
+                <p className="text-sm text-slate-400">Anuncios OFFER activos en el mercado</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4 pt-4">
+              {/* Anuncios Activos */}
+              <div className="flex items-center justify-between p-5 rounded-xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/15 transition-colors">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6 text-orange-400" />
+                  <span className="text-slate-300 font-medium">Anuncios Activos</span>
+                </div>
+                <span className="font-mono font-bold text-3xl text-orange-400">{sellStats.activeAds}</span>
+              </div>
+              
+              {/* Precio Mínimo */}
+              <div className="flex items-center justify-between p-5 rounded-xl bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Target className="w-5 h-5 text-orange-400" />
+                  <span className="text-slate-400">Precio Mínimo</span>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono font-semibold text-xl text-orange-400">
+                    {sellStats.minPrice.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-slate-500">VES</div>
+                </div>
+              </div>
+              
+              {/* Precio Máximo */}
+              <div className="flex items-center justify-between p-5 rounded-xl bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Target className="w-5 h-5 text-orange-400" />
+                  <span className="text-slate-400">Precio Máximo</span>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono font-semibold text-xl text-orange-400">
+                    {sellStats.maxPrice.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-slate-500">VES</div>
+                </div>
+              </div>
+
+              {/* Rango de Precio */}
+              <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20">
+                <div className="text-xs text-slate-400 mb-2">Rango de Precio</div>
+                <div className="font-mono text-sm text-orange-400">
+                  {sellStats.minPrice.toFixed(2)} - {sellStats.maxPrice.toFixed(2)} VES
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

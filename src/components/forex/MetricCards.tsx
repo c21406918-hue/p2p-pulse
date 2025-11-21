@@ -85,7 +85,11 @@ export function MetricCards({ data }: MetricCardsProps) {
         <Card className="bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent border-green-500/30 p-8 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20 relative overflow-hidden">
           {/* Badge de variación */}
           <div className="absolute top-4 right-4">
-            <div className={}>
+            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+              changes.bidVolumeChange >= 0
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-red-500/20 text-red-400'
+            }`}>
               {changes.bidVolumeChange >= 0 ? (
                 <ArrowUp className="w-3 h-3" />
               ) : (
@@ -125,7 +129,11 @@ export function MetricCards({ data }: MetricCardsProps) {
         <Card className="bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent border-orange-500/30 p-8 hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 relative overflow-hidden">
           {/* Badge de variación */}
           <div className="absolute top-4 right-4">
-            <div className={}>
+            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+              changes.offerVolumeChange >= 0
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-red-500/20 text-red-400'
+            }`}>
               {changes.offerVolumeChange >= 0 ? (
                 <ArrowUp className="w-3 h-3" />
               ) : (
@@ -167,7 +175,11 @@ export function MetricCards({ data }: MetricCardsProps) {
         <Card className="bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent border-green-500/30 p-8 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20 relative overflow-hidden">
           {/* Badge de variación */}
           <div className="absolute top-4 right-4">
-            <div className={}>
+            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+              changes.buyPriceChange >= 0
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-red-500/20 text-red-400'
+            }`}>
               {changes.buyPriceChange >= 0 ? (
                 <ArrowUp className="w-3 h-3" />
               ) : (
@@ -205,7 +217,11 @@ export function MetricCards({ data }: MetricCardsProps) {
         <Card className="bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent border-orange-500/30 p-8 hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 relative overflow-hidden">
           {/* Badge de variación */}
           <div className="absolute top-4 right-4">
-            <div className={}>
+            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+              changes.sellPriceChange >= 0
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-red-500/20 text-red-400'
+            }`}>
               {changes.sellPriceChange >= 0 ? (
                 <ArrowUp className="w-3 h-3" />
               ) : (

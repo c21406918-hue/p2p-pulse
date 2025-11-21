@@ -16,6 +16,15 @@ export interface MarketData {
   timestamp?: string;
 }
 
+export interface ForexMetrics {
+  bid: number;
+  ask: number;
+  spread: number;
+  spreadPercent: number;
+  volume24h: number;
+  midPrice: number;
+}
+
 export async function fetchMarketData(): Promise<MarketData> {
   try {
     const response = await fetch(EDGE_FUNCTION_URL, {
@@ -52,20 +61,66 @@ export function calculateWeightedAveragePrice(ads: BinanceAd[]): number {
   return weightedSum / totalVolume;
 }
 
+export function calculateForexMetrics(data: MarketData): ForexMetrics {
+  // ASK = mejor precio de venta (el más bajo que alguien vende USDT)
+  const ask = data.sellAds.length > 0 
+    ? Math.min(...data.sellAds.map(ad => ad.price))
+    : 0;
+  
+  // BID = mejor precio de compra (el más alto que alguien compra USDT)
+  const bid = data.buyAds.length > 0
+    ? Math.max(...data.buyAds.map(ad => ad.price))
+    : 0;
+  
+  const spread = ask - bid;
+  const spreadPercent = bid > 0 ? (spread / bid) * 100 : 0;
+  const volume24h = calculateTotalVolume(data.buyAds) + calculateTotalVolume(data.sellAds);
+  const midPrice = (bid + ask) / 2;
+  
+  return { bid, ask, spread, spreadPercent, volume24h, midPrice };
+}
+
+export function getCumulativeDepth(ads: BinanceAd[]): Array<{ price: number; volume: number }> {
+  const sorted = [...ads].sort((a, b) => a.price - b.price);
+  let cumulative = 0;
+  
+  return sorted.map(ad => {
+    cumulative += ad.volume_usdt;
+    return { price: ad.price, volume: cumulative };
+  });
+}
+
+export function getPaymentMethodDistribution(data: MarketData): Array<{ name: string; volume: number }> {
+  const allAds = [...data.buyAds, ...data.sellAds];
+  const methodMap = new Map<string, number>();
+  
+  allAds.forEach(ad => {
+    ad.payments.forEach(payment => {
+      const current = methodMap.get(payment) || 0;
+      methodMap.set(payment, current + ad.volume_usdt);
+    });
+  });
+  
+  return Array.from(methodMap.entries())
+    .map(([name, volume]) => ({ name, volume }))
+    .sort((a, b) => b.volume - a.volume)
+    .slice(0, 8);
+}
+
 export function calculateTransactionsNeeded(
   targetUSDT: number,
   ads: BinanceAd[]
-): { transactionsCount: number; estimatedVES: number } {
+): { transactionsCount: number; estimatedVES: number; avgPrice: number; marketImpact: number } {
   if (targetUSDT <= 0 || ads.length === 0) {
-    return { transactionsCount: 0, estimatedVES: 0 };
+    return { transactionsCount: 0, estimatedVES: 0, avgPrice: 0, marketImpact: 0 };
   }
 
   let remainingUSDT = targetUSDT;
   let transactionsCount = 0;
   let totalVES = 0;
 
-  // Sort ads by price (best price first)
   const sortedAds = [...ads].sort((a, b) => a.price - b.price);
+  const initialPrice = sortedAds[0].price;
 
   for (const ad of sortedAds) {
     if (remainingUSDT <= 0) break;
@@ -78,8 +133,13 @@ export function calculateTransactionsNeeded(
     transactionsCount++;
   }
 
+  const avgPrice = targetUSDT > 0 ? totalVES / targetUSDT : 0;
+  const marketImpact = initialPrice > 0 ? ((avgPrice - initialPrice) / initialPrice) * 100 : 0;
+
   return {
     transactionsCount,
-    estimatedVES: totalVES
+    estimatedVES: totalVES,
+    avgPrice,
+    marketImpact
   };
 }

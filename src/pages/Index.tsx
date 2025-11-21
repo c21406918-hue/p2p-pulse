@@ -1,25 +1,19 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  RefreshCw,
-  Activity,
-  LogOut
-} from "lucide-react";
+import { RefreshCw, Activity, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { MetricCard } from "@/components/MetricCard";
-import { Calculator } from "@/components/Calculator";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
   fetchMarketData, 
-  calculateTotalVolume, 
-  calculateWeightedAveragePrice,
+  calculateForexMetrics,
   type MarketData 
 } from "@/lib/binance-api";
+import { TickerBar } from "@/components/forex/TickerBar";
+import { DepthChart } from "@/components/forex/DepthChart";
+import { MarketStats } from "@/components/forex/MarketStats";
+import { OrderCalculator } from "@/components/forex/OrderCalculator";
 
 const REFRESH_INTERVAL = 30000; // 30 seconds
 
@@ -71,7 +65,7 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <Activity className="w-12 h-12 text-primary animate-pulse mx-auto" />
           <p className="text-lg text-muted-foreground">Cargando datos del mercado...</p>
@@ -80,143 +74,91 @@ const Index = () => {
     );
   }
 
-  const buyVolume = data ? calculateTotalVolume(data.buyAds) : 0;
-  const sellVolume = data ? calculateTotalVolume(data.sellAds) : 0;
-  const buyAvgPrice = data ? calculateWeightedAveragePrice(data.buyAds) : 0;
-  const sellAvgPrice = data ? calculateWeightedAveragePrice(data.sellAds) : 0;
+  const forexMetrics = data ? calculateForexMetrics(data) : null;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/40 backdrop-blur-xl bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-6">
+      <header className="border-b border-border/40 backdrop-blur-xl bg-background/95 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                BinanceVES Monitor
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Análisis en Tiempo Real del Mercado P2P USDT/VES
-              </p>
+              <h1 className="text-2xl font-bold">Dashboard Forex - USDT/VES</h1>
+              <p className="text-xs text-muted-foreground mt-1">Monitor Profesional P2P Binance</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Última actualización</p>
-                <p className="text-sm font-mono">{lastUpdate.toLocaleTimeString('es-VE')}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleManualRefresh} 
-                  disabled={isRefetching}
-                  size="icon"
-                  variant="outline"
-                  className="animate-glow"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
-                </Button>
-                <Button 
-                  onClick={handleLogout}
-                  size="icon"
-                  variant="outline"
-                  title="Cerrar sesión"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
+            <div className="flex items-center gap-3">
+              <Button 
+                onClick={handleManualRefresh} 
+                disabled={isRefetching}
+                size="sm"
+                variant="outline"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+                Actualizar
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                size="sm"
+                variant="outline"
+                title="Cerrar sesión"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Salir
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <MetricCard
-              title="Volumen Total de Offer"
-              value={buyVolume.toLocaleString('es-VE', { maximumFractionDigits: 2 })}
-              subtitle="USDT disponibles"
-              icon={TrendingUp}
-              variant="buy"
-            />
+      <main className="container mx-auto px-4 py-6">
+        <div className="space-y-6">
+          {/* Ticker Bar */}
+          {forexMetrics && (
+            <TickerBar metrics={forexMetrics} lastUpdate={lastUpdate} />
+          )}
+
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Depth Chart */}
+            {data && <DepthChart data={data} />}
             
-            <MetricCard
-              title="Volumen Total de Bid"
-              value={sellVolume.toLocaleString('es-VE', { maximumFractionDigits: 2 })}
-              subtitle="USDT disponibles"
-              icon={TrendingDown}
-              variant="sell"
-            />
-            
-            <MetricCard
-              title="Precio Promedio de Compra"
-              value={buyAvgPrice.toFixed(2)}
-              subtitle="VES por USDT"
-              icon={DollarSign}
-              variant="buy"
-            />
-            
-            <MetricCard
-              title="Precio Promedio de Venta"
-              value={sellAvgPrice.toFixed(2)}
-              subtitle="VES por USDT"
-              icon={DollarSign}
-              variant="sell"
-            />
+            {/* Market Stats */}
+            {data && <MarketStats data={data} />}
           </div>
 
-          {/* Calculator */}
-          {data && <Calculator buyAds={data.buyAds} sellAds={data.sellAds} />}
+          {/* Bottom Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Order Calculator */}
+            {data && <OrderCalculator buyAds={data.buyAds} sellAds={data.sellAds} />}
+            
+            {/* Additional Info Panel */}
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-semibold mb-4">Información del Mercado</h3>
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="text-sm font-medium mb-2">Sobre BID y ASK</div>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>BID:</strong> Precio más alto que alguien pagará por USDT (compra).<br/>
+                    <strong>ASK:</strong> Precio más bajo al que alguien venderá USDT.<br/>
+                    <strong>SPREAD:</strong> Diferencia entre ASK y BID, indica la liquidez del mercado.
+                  </p>
+                </div>
+                
+                <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
+                  <div className="text-sm font-medium mb-2">Gráfico de Profundidad</div>
+                  <p className="text-xs text-muted-foreground">
+                    Visualiza el volumen acumulado de órdenes a diferentes precios. 
+                    Los "muros" grandes indican niveles de soporte/resistencia importantes.
+                  </p>
+                </div>
 
-          {/* Market Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-success" />
-                Estadísticas de Compra
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Anuncios Activos:</span>
-                  <span className="font-mono font-semibold">{data?.buyAds.length || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Precio Mínimo:</span>
-                  <span className="font-mono">
-                    {Math.min(...(data?.buyAds.map(a => a.price) || [0])).toFixed(2)} VES
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Precio Máximo:</span>
-                  <span className="font-mono">
-                    {Math.max(...(data?.buyAds.map(a => a.price) || [0])).toFixed(2)} VES
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-warning" />
-                Estadísticas de Venta
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Anuncios Activos:</span>
-                  <span className="font-mono font-semibold">{data?.sellAds.length || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Precio Mínimo:</span>
-                  <span className="font-mono">
-                    {Math.min(...(data?.sellAds.map(a => a.price) || [0])).toFixed(2)} VES
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Precio Máximo:</span>
-                  <span className="font-mono">
-                    {Math.max(...(data?.sellAds.map(a => a.price) || [0])).toFixed(2)} VES
-                  </span>
+                <div className="p-4 rounded-lg bg-success/5 border border-success/20">
+                  <div className="text-sm font-medium mb-2">Impacto de Mercado</div>
+                  <p className="text-xs text-muted-foreground">
+                    Indica cuánto puede cambiar el precio tu orden. Un impacto bajo (&lt;1%) 
+                    significa buena liquidez. Alto (&gt;3%) puede mover significativamente el mercado.
+                  </p>
                 </div>
               </div>
             </div>
@@ -225,10 +167,10 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 mt-16">
-        <div className="container mx-auto px-4 py-6">
-          <p className="text-center text-sm text-muted-foreground">
-            Datos actualizados automáticamente cada 30 segundos desde Binance P2P
+      <footer className="border-t border-border/40 mt-12">
+        <div className="container mx-auto px-4 py-4">
+          <p className="text-center text-xs text-muted-foreground">
+            Dashboard Forex Profesional • Datos en tiempo real desde Binance P2P • Actualización automática cada 30s
           </p>
         </div>
       </footer>
